@@ -1,6 +1,7 @@
 package org.mwg.plugins.rules;
 
 import org.mwg.Graph;
+import org.mwg.Type;
 import org.mwg.plugin.NodeFactory;
 import org.mwg.plugin.Plugin;
 import org.mwg.plugins.rules.nodes.condition.ConstantValue;
@@ -17,7 +18,12 @@ public class RulesPlugin implements Plugin {
     public void start(Graph graph) {
         graph.nodeRegistry()
                 .declaration(RuleNode.NODE_NAME)
-                .setFactory((world, time, id, g) -> new RuleNode(world,time,id, g));
+                .setFactory((world, time, id, g) -> {
+                    RuleNode ruleNode = new RuleNode(world,time,id, g);
+//                    ruleNode.set(RuleNode.RESOLUTIONTASK,RuleNode.RESOLUTIONTASK_TYPE,RuleNode.TASK);
+                    ruleNode.set("attribute", Type.INT,66);
+                    return ruleNode;
+                });
 
         graph.nodeRegistry()
                 .declaration(PullEventNode.NODE_NAME)

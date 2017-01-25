@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.kevoree.mwg.plugins.rules</groupId>
-    <artifactId>core</artifactId>
+    <artifactId>future-core</artifactId>
     <version>1-SNAPSHOT</version>
 
     <properties>
@@ -23,6 +23,14 @@
             <groupId>org.kevoree.mwg</groupId>
             <artifactId>core</artifactId>
             <version>11-SNAPSHOT</version>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
