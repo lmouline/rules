@@ -77,7 +77,10 @@ public class RulesConstants {
      */
     public static final int TYPE_EQUAL_OPERATOR = 10;
 
-
+    /**
+     * Value := params[{@link #PARAMETRIC_INDEX}]
+     */
+    public static final int TYPE_VARIABLE = 11;
 
     /**
      * Node value
@@ -96,4 +99,11 @@ public class RulesConstants {
      * Right term
      */
     public static final String RIGHT_TERM = "right";
+
+    /**
+     * Param index
+     */
+    public static final String PARAMETRIC_INDEX = "index";
+    public static final byte PARAMETRIC_INDEX_TYPE = Type.INT;
+
 }

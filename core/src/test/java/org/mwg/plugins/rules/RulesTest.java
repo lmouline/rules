@@ -2,13 +2,11 @@ package org.mwg.plugins.rules;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mwg.Callback;
-import org.mwg.Graph;
-import org.mwg.GraphBuilder;
-import org.mwg.Type;
+import org.mwg.*;
 import org.mwg.struct.EGraph;
 import org.mwg.struct.ENode;
 import org.mwg.struct.ERelation;
+import org.mwg.struct.Relation;
 
 public class RulesTest {
 
@@ -81,8 +79,84 @@ public class RulesTest {
                 conditionGraph.setRoot(not);
 
                 Assert.assertTrue(((boolean)ruleNode.get(RuleNode.VALUE)));
+
+                graph.disconnect(null);
             }
         });
+    }
 
+    @Test
+    public void testRulesWithNV() {
+        Graph graph = new GraphBuilder().withPlugin(new RulesPlugin()).build();
+        graph.connect(new Callback<Boolean>() {
+            @Override
+            public void on(Boolean result) {
+                Node node = graph.newNode(0,0);
+                node.set("value",Type.INT,57);
+
+                RuleNode ruleNode = (RuleNode) graph.newTypedNode(0,0,RuleNode.NODE_NAME);
+                EGraph condition = (EGraph) ruleNode.get(RuleNode.CONDITION);
+
+                ENode constant = condition.newNode();
+                constant.set(RulesConstants.TYPE,RulesConstants.TYPE_TYPE,RulesConstants.TYPE_CONSTANT_ARITHMETIC_VALUE);
+                constant.set(RulesConstants.VALUE,Type.DOUBLE,56.);
+
+                ENode nodeValue = condition.newNode();
+                nodeValue.set(RulesConstants.TYPE,RulesConstants.TYPE_TYPE,RulesConstants.TYPE_NODE_VALUE);
+                Relation relation = (Relation) constant.getOrCreate(RulesConstants.NODE_VALUE_RELATION,Type.RELATION);
+                relation.addNode(node);
+                nodeValue.set(RulesConstants.NODE_VALUE_RELATION,Type.RELATION,relation);
+                nodeValue.set(RulesConstants.NODE_VALUE_ATTRIBUTE,RulesConstants.NODE_VALUE_ATTRIBUTE_TYPE,"value");
+
+                // nodeValue.relation.attribute > constant
+                ENode moreThan = condition.newNode();
+                moreThan.set(RulesConstants.TYPE,RulesConstants.TYPE_TYPE,RulesConstants.TYPE_SUP_OPERATOR);
+                ERelation left = (ERelation) moreThan.getOrCreate(RulesConstants.LEFT_TERM,Type.ERELATION);
+                left.add(nodeValue);
+                moreThan.set(RulesConstants.LEFT_TERM, Type.ERELATION,left);
+                ERelation right = (ERelation) moreThan.getOrCreate(RulesConstants.RIGHT_TERM,Type.ERELATION);
+                right.add(constant);
+                moreThan.set(RulesConstants.RIGHT_TERM,Type.ERELATION,right);
+
+                condition.setRoot(moreThan);
+
+                Assert.assertTrue((Boolean) ruleNode.get(RuleNode.VALUE));
+            }
+        });
+    }
+
+
+    @Test
+    public void testRulesWithParams() {
+        Graph graph = new GraphBuilder().withPlugin(new RulesPlugin()).build();
+        graph.connect(new Callback<Boolean>() {
+            @Override
+            public void on(Boolean result) {
+                RuleNode ruleNode = (RuleNode) graph.newTypedNode(0,0,RuleNode.NODE_NAME);
+                EGraph condition = (EGraph) ruleNode.get(RuleNode.CONDITION);
+
+                ENode constant = condition.newNode();
+                constant.set(RulesConstants.TYPE,RulesConstants.TYPE_TYPE,RulesConstants.TYPE_CONSTANT_ARITHMETIC_VALUE);
+                constant.set(RulesConstants.VALUE,Type.DOUBLE,56.);
+
+                ENode nodeVar = condition.newNode();
+                nodeVar.set(RulesConstants.TYPE,RulesConstants.TYPE_TYPE,RulesConstants.TYPE_VARIABLE);
+                nodeVar.set(RulesConstants.PARAMETRIC_INDEX,RulesConstants.PARAMETRIC_INDEX_TYPE,0);
+
+                // nodeValue.relation.attribute > constant
+                ENode moreThan = condition.newNode();
+                moreThan.set(RulesConstants.TYPE,RulesConstants.TYPE_TYPE,RulesConstants.TYPE_SUP_OPERATOR);
+                ERelation left = (ERelation) moreThan.getOrCreate(RulesConstants.LEFT_TERM,Type.ERELATION);
+                left.add(nodeVar);
+                moreThan.set(RulesConstants.LEFT_TERM, Type.ERELATION,left);
+                ERelation right = (ERelation) moreThan.getOrCreate(RulesConstants.RIGHT_TERM,Type.ERELATION);
+                right.add(constant);
+                moreThan.set(RulesConstants.RIGHT_TERM,Type.ERELATION,right);
+
+                condition.setRoot(moreThan);
+
+                Assert.assertTrue((Boolean) ruleNode.getWithParams(RuleNode.VALUE,87));
+            }
+        });
     }
 }

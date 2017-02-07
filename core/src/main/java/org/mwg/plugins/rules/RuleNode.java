@@ -1,12 +1,12 @@
 package org.mwg.plugins.rules;
 
-import org.mwg.Graph;
-import org.mwg.Node;
-import org.mwg.Type;
+import org.mwg.*;
 import org.mwg.base.BaseNode;
+import org.mwg.internal.utility.CoreDeferCounterSync;
 import org.mwg.struct.EGraph;
 import org.mwg.struct.ENode;
 import org.mwg.struct.ERelation;
+import org.mwg.struct.Relation;
 
 public class RuleNode extends BaseNode {
     public static final String NODE_NAME = "RuleNode";
@@ -38,9 +38,20 @@ public class RuleNode extends BaseNode {
         } else if(VALUE.equals(propertyName)) {
             EGraph graph = (EGraph) super.getOrCreate(CONDITION,Type.EGRAPH);
             ENode root = graph.root();
-            return root != null && eval(root);
+            return root != null && eval(root,this);
         } else {
             return super.get(propertyName);
+
+        }
+    }
+
+    public Object getWithParams(String propertyName, int... params) {
+        if(VALUE.equals(propertyName)) {
+            EGraph graph = (EGraph) super.getOrCreate(CONDITION,Type.EGRAPH);
+            ENode root = graph.root();
+            return root != null && eval(root,this, params);
+        } else {
+            return get(propertyName);
 
         }
     }
@@ -62,7 +73,7 @@ public class RuleNode extends BaseNode {
         return super.setAt(index, type, value);
     }
 
-    private static boolean eval(ENode condition) {
+    private static boolean eval(ENode condition, RuleNode ruleNode, int... params) {
         int type = (int) condition.get(RulesConstants.TYPE);
 
         switch (type) {
@@ -72,55 +83,55 @@ public class RuleNode extends BaseNode {
             }
             case RulesConstants.TYPE_NOT_OPERATOR: {
                 ERelation left = (ERelation) condition.get(RulesConstants.LEFT_TERM);
-                return !eval(left.nodes()[0]);
+                return !eval(left.nodes()[0],ruleNode,params);
             }
             case RulesConstants.TYPE_AND_OPERATOR:
             {
                 ERelation left = (ERelation) condition.get(RulesConstants.LEFT_TERM);
                 ERelation right = (ERelation) condition.get(RulesConstants.RIGHT_TERM);
-                return eval(left.nodes()[0]) && eval(right.nodes()[0]);
+                return eval(left.nodes()[0],ruleNode,params) && eval(right.nodes()[0],ruleNode,params);
             }
             case RulesConstants.TYPE_OR_OPERATOR:
             {
                 ERelation left = (ERelation) condition.get(RulesConstants.LEFT_TERM);
                 ERelation right = (ERelation) condition.get(RulesConstants.RIGHT_TERM);
-                return eval(left.nodes()[0]) || eval(right.nodes()[0]);
+                return eval(left.nodes()[0],ruleNode,params) || eval(right.nodes()[0],ruleNode,params);
             }
             case RulesConstants.TYPE_SUPOREQ_OPERATOR:
             {
                 ERelation left = (ERelation) condition.get(RulesConstants.LEFT_TERM);
                 ERelation right = (ERelation) condition.get(RulesConstants.RIGHT_TERM);
-                return evalArith(left.nodes()[0]) >= evalArith(right.nodes()[0]);
+                return evalArith(left.nodes()[0],ruleNode,params) >= evalArith(right.nodes()[0],ruleNode,params);
             }
             case RulesConstants.TYPE_SUP_OPERATOR:
             {
                 ERelation left = (ERelation) condition.get(RulesConstants.LEFT_TERM);
                 ERelation right = (ERelation) condition.get(RulesConstants.RIGHT_TERM);
-                return evalArith(left.nodes()[0]) > evalArith(right.nodes()[0]);
+                return evalArith(left.nodes()[0],ruleNode,params) > evalArith(right.nodes()[0],ruleNode,params);
             }
             case RulesConstants.TYPE_DIFF_OPERATOR:
             {
                 ERelation left = (ERelation) condition.get(RulesConstants.LEFT_TERM);
                 ERelation right = (ERelation) condition.get(RulesConstants.RIGHT_TERM);
-                return evalArith(left.nodes()[0]) != evalArith(right.nodes()[0]);
+                return evalArith(left.nodes()[0],ruleNode,params) != evalArith(right.nodes()[0],ruleNode,params);
             }
             case RulesConstants.TYPE_LESSOREQ_OPERATOR:
             {
                 ERelation left = (ERelation) condition.get(RulesConstants.LEFT_TERM);
                 ERelation right = (ERelation) condition.get(RulesConstants.RIGHT_TERM);
-                return evalArith(left.nodes()[0]) <= evalArith(right.nodes()[0]);
+                return evalArith(left.nodes()[0],ruleNode,params) <= evalArith(right.nodes()[0],ruleNode,params);
             }
             case RulesConstants.TYPE_LESS_OPERATOR:
             {
                 ERelation left = (ERelation) condition.get(RulesConstants.LEFT_TERM);
                 ERelation right = (ERelation) condition.get(RulesConstants.RIGHT_TERM);
-                return evalArith(left.nodes()[0]) < evalArith(right.nodes()[0]);
+                return evalArith(left.nodes()[0],ruleNode,params) < evalArith(right.nodes()[0],ruleNode,params);
             }
             case RulesConstants.TYPE_EQUAL_OPERATOR:
             {
                 ERelation left = (ERelation) condition.get(RulesConstants.LEFT_TERM);
                 ERelation right = (ERelation) condition.get(RulesConstants.RIGHT_TERM);
-                return evalArith(left.nodes()[0]) == evalArith(right.nodes()[0]);
+                return evalArith(left.nodes()[0],ruleNode,params) == evalArith(right.nodes()[0],ruleNode,params);
             }
             default:
                 throw new RuntimeException("Type with id " + type + " is an unknown boolean type.");
@@ -128,14 +139,45 @@ public class RuleNode extends BaseNode {
         }
     }
 
-    private static double evalArith(ENode expr) {
+    private static double evalArith(ENode expr, RuleNode node, int... params) {
         int type = (int) expr.get(RulesConstants.TYPE);
 
         switch (type) {
             case RulesConstants.TYPE_NODE_VALUE:
-                return -1;
+                Relation relation = (Relation) expr.getOrCreate(RulesConstants.NODE_VALUE_RELATION,Type.RELATION);
+                long nodeId = relation.get(0);
+                DeferCounterSync deferCounterSync = new CoreDeferCounterSync(1);
+                expr.graph().graph().lookup(node.world(), node.time(), nodeId, new Callback<Node>() {
+                    @Override
+                    public void on(Node result) {
+                        String attName = (String) expr.get(RulesConstants.NODE_VALUE_ATTRIBUTE);
+                        deferCounterSync.wrap().on(result.get(attName));
+                        deferCounterSync.count();
+                    }
+                });
+
+                try {
+                    return (double) deferCounterSync.waitResult();
+                } catch (Exception e) {
+                    try {
+                        return (int) deferCounterSync.waitResult();
+                    } catch (Exception e1) {
+                        return (long) deferCounterSync.waitResult();
+                    }
+                }
             case RulesConstants.TYPE_CONSTANT_ARITHMETIC_VALUE:
-                return (double) expr.get(VALUE);
+                try {
+                    return (double) expr.get(VALUE);
+                } catch (Exception e) {
+                    try {
+                        return (int) expr.get(VALUE);
+                    } catch (Exception e1) {
+                        return (long) expr.get(VALUE);
+                    }
+                }
+            case RulesConstants.TYPE_VARIABLE:
+                int idx = (int) expr.get(RulesConstants.PARAMETRIC_INDEX);
+                return params[idx];
             default:
                 throw new RuntimeException("Type with id " + type + " is an unknown arithmetic type.");
         }

@@ -12,6 +12,4 @@
         <module>core</module>
         <module>samples/iotrules</module>
     </modules>
-
-
 </project>
