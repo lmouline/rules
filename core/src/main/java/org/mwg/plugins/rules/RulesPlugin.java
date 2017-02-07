@@ -1,7 +1,8 @@
 package org.mwg.plugins.rules;
 
-import org.mwg.Graph;
-import org.mwg.plugin.Plugin;
+
+import greycat.Graph;
+import greycat.plugin.Plugin;
 
 public class RulesPlugin implements Plugin {
 

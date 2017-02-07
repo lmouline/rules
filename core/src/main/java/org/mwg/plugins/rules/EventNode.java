@@ -1,10 +1,11 @@
 package org.mwg.plugins.rules;
 
-import org.mwg.Graph;
-import org.mwg.Type;
-import org.mwg.base.BaseNode;
 
-public class EventNode extends BaseNode{
+import greycat.Graph;
+import greycat.Type;
+import greycat.base.BaseNode;
+
+public class EventNode extends BaseNode {
     public static final String NODE_NAME = "EventNode";
 
     public static final String EVENTTIME = "timeEvent";

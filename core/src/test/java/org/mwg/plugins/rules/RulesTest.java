@@ -1,12 +1,13 @@
 package org.mwg.plugins.rules;
 
+import greycat.*;
+import greycat.struct.EGraph;
+import greycat.struct.ENode;
+import greycat.struct.ERelation;
+import greycat.struct.Relation;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mwg.*;
-import org.mwg.struct.EGraph;
-import org.mwg.struct.ENode;
-import org.mwg.struct.ERelation;
-import org.mwg.struct.Relation;
+
 
 public class RulesTest {
 
@@ -31,7 +32,7 @@ public class RulesTest {
                 ENode eqNode = conditionGraph.newNode();
                 eqNode.set(RulesConstants.TYPE,RulesConstants.TYPE_TYPE,RulesConstants.TYPE_EQUAL_OPERATOR);
 
-                ERelation left = (ERelation) eqNode.getOrCreate(RulesConstants.LEFT_TERM,Type.ERELATION);
+                ERelation left = (ERelation) eqNode.getOrCreate(RulesConstants.LEFT_TERM, Type.ERELATION);
                 left.add(constant);
                 eqNode.set(RulesConstants.LEFT_TERM,Type.ERELATION,left);
                 ERelation right = (ERelation) eqNode.getOrCreate(RulesConstants.RIGHT_TERM,Type.ERELATION);
@@ -159,4 +160,40 @@ public class RulesTest {
         });
     }
 
+    @Test
+    public void test() {
+        Graph graph = new GraphBuilder().withPlugin(new RulesPlugin()).build();
+        graph.connect(new Callback<Boolean>() {
+            @Override
+            public void on(Boolean result) {
+                Tasks.newTask()
+                        .travelInTime("0")
+                        .travelInTime("0")
+                        .createNode()
+                        .setAttribute("name",Type.STRING,"root1")
+                        .setAsVar("test")
+                        .log("{{test}}")
+                        .thenDo(new ActionFunction() {
+                            @Override
+                            public void eval(TaskContext ctx) {
+                                Node node = (Node) ctx.variable("test").get(0);
+                                node.set("attribute",Type.INT,5);
+//                                ctx.graph().save(new Callback<Boolean>() {
+//                                    @Override
+//                                    public void on(Boolean result) {
+                                        ctx.continueTask();
+//                                    }
+//                                });
+                            }
+                        })
+                        .log("{{test}}")
+                        .execute(graph, new Callback<TaskResult>() {
+                            @Override
+                            public void on(TaskResult result) {
+                                System.out.println(result.output());
+                            }
+                        });
+            }
+        });
+    }
 }

@@ -1,13 +1,12 @@
 package org.mwg.plugins.rules;
 
-import org.mwg.*;
-import org.mwg.base.BaseNode;
-import org.mwg.internal.utility.CoreDeferCounterSync;
-import org.mwg.struct.EGraph;
-import org.mwg.struct.ENode;
-import org.mwg.struct.ERelation;
-import org.mwg.struct.Relation;
-import org.mwg.task.Tasks;
+import greycat.*;
+import greycat.base.BaseNode;
+import greycat.internal.CoreDeferCounterSync;
+import greycat.struct.EGraph;
+import greycat.struct.ENode;
+import greycat.struct.ERelation;
+import greycat.struct.Relation;
 
 public class RuleNode extends BaseNode {
     public static final String NODE_NAME = "RuleNode";
@@ -186,13 +185,18 @@ public class RuleNode extends BaseNode {
     }
 
     public void executeIf() {
+        getExecution().executeSync(graph());
+    }
+
+    public Task getExecution() {
         if((boolean) get(VALUE)) {
-            Tasks.newTask()
+            return Tasks.newTask()
                     .inject(this)
                     .traverse(ACTION_STARTING_POINT)
                     .defineAsGlobalVar(ACTION_STARTING_POINT)
-                    .parse(ACTION,graph())
-                    .executeSync(graph());
+                    .parse((String) get(ACTION),graph());
         }
+        return Tasks.newTask();
+
     }
 }

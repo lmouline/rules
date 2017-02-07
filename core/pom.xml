@@ -14,15 +14,15 @@
     <version>1-SNAPSHOT</version>
 
     <properties>
-        <mwdb.version>11-SNAPSHOT</mwdb.version>
+        <greycat.version>1-SNAPSHOT</greycat.version>
     </properties>
 
 
     <dependencies>
         <dependency>
-            <groupId>org.kevoree.mwg</groupId>
-            <artifactId>core</artifactId>
-            <version>11-SNAPSHOT</version>
+            <groupId>com.datathings</groupId>
+            <artifactId>greycat</artifactId>
+            <version>${greycat.version}</version>
         </dependency>
 
         <dependency>

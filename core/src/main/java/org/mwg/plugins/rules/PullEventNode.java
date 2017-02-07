@@ -1,9 +1,9 @@
 package org.mwg.plugins.rules;
 
-import org.mwg.Graph;
-import org.mwg.Type;
-import org.mwg.base.BaseNode;
 
+import greycat.Graph;
+import greycat.Type;
+import greycat.base.BaseNode;
 
 public class PullEventNode extends BaseNode {
     public static final String NODE_NAME = "PullEventNode";

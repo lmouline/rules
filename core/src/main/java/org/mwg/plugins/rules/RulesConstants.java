@@ -1,6 +1,7 @@
 package org.mwg.plugins.rules;
 
-import org.mwg.Type;
+
+import greycat.Type;
 
 public class RulesConstants {
 
