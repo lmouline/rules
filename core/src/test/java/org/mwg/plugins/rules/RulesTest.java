@@ -125,7 +125,6 @@ public class RulesTest {
         });
     }
 
-
     @Test
     public void testRulesWithParams() {
         Graph graph = new GraphBuilder().withPlugin(new RulesPlugin()).build();
@@ -159,4 +158,5 @@ public class RulesTest {
             }
         });
     }
+
 }

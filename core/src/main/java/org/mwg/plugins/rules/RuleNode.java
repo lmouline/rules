@@ -7,6 +7,7 @@ import org.mwg.struct.EGraph;
 import org.mwg.struct.ENode;
 import org.mwg.struct.ERelation;
 import org.mwg.struct.Relation;
+import org.mwg.task.Tasks;
 
 public class RuleNode extends BaseNode {
     public static final String NODE_NAME = "RuleNode";
@@ -17,6 +18,8 @@ public class RuleNode extends BaseNode {
     public static final String ACTION = "action";
     public static final byte ACTIOIN_TYPE = Type.STRING;
 
+    public static final String ACTION_STARTING_POINT = "actionStart";
+
     public static final String IS_TRIGGERED = "is_trigered";
     public static final byte IS_TRIGGERED_TYPE = Type.BOOL;
 
@@ -25,7 +28,6 @@ public class RuleNode extends BaseNode {
 
     public static final String VALUE = "value";
     public static final byte VALUE_TYPE = Type.BOOL;
-
 
     public RuleNode(long p_world, long p_time, long p_id, Graph p_graph) {
         super(p_world, p_time, p_id, p_graph);
@@ -180,6 +182,17 @@ public class RuleNode extends BaseNode {
                 return params[idx];
             default:
                 throw new RuntimeException("Type with id " + type + " is an unknown arithmetic type.");
+        }
+    }
+
+    public void executeIf() {
+        if((boolean) get(VALUE)) {
+            Tasks.newTask()
+                    .inject(this)
+                    .traverse(ACTION_STARTING_POINT)
+                    .defineAsGlobalVar(ACTION_STARTING_POINT)
+                    .parse(ACTION,graph())
+                    .executeSync(graph());
         }
     }
 }
