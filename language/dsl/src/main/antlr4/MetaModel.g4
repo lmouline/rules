@@ -12,13 +12,13 @@ NUMBER : [\-]?[0-9]+'.'?[0-9]*;
 
 metamodel: ruleDef*;
 
-ruleDef: 'rule' STRING condition action;
+ruleDef: 'rule' STRING condition action 'end';
 condition: 'when' ('!')? (term boolOperator term);
 term: (type '.' attribute) | NUMBER | STRING;
 boolOperator: ( '==' | '>' | '>=' | '<' | '<=' | '!=');
 type: IDENT ('.' IDENT)*;
 attribute: IDENT;
 action: 'then' task;
-task: taskAction ('.'taskAction)*;
-taskAction: IDENT '(' (value(',' value)*)? ')';
+task: operation ('.'operation)*;
+operation: IDENT '(' (value(',' value)*)? ')';
 value: STRING | '{' task '}';

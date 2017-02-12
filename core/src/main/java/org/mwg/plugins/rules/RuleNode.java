@@ -15,7 +15,7 @@ public class RuleNode extends BaseNode {
     public static final byte NAME_TYPE = Type.STRING;
 
     public static final String ACTION = "action";
-    public static final byte ACTIOIN_TYPE = Type.STRING;
+    public static final byte ACTIOIN_TYPE = Type.INT;
 
     public static final String ACTION_STARTING_POINT = "actionStart";
 
@@ -182,21 +182,5 @@ public class RuleNode extends BaseNode {
             default:
                 throw new RuntimeException("Type with id " + type + " is an unknown arithmetic type.");
         }
-    }
-
-    public void executeIf() {
-        getExecution().executeSync(graph());
-    }
-
-    public Task getExecution() {
-        if((boolean) get(VALUE)) {
-            return Tasks.newTask()
-                    .inject(this)
-                    .traverse(ACTION_STARTING_POINT)
-                    .defineAsGlobalVar(ACTION_STARTING_POINT)
-                    .parse((String) get(ACTION),graph());
-        }
-        return Tasks.newTask();
-
     }
 }
